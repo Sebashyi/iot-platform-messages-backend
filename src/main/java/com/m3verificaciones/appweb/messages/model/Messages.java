@@ -50,11 +50,10 @@ public class Messages {
 
     private boolean confirmed;
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String gws;
 
-    @Lob
-    @Column(name = "raw_reading")
+    @Column(name = "raw_reading", columnDefinition = "TEXT")
     private String rawReading;
 
     @NotBlank
