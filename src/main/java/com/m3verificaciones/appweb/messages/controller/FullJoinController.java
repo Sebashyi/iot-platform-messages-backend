@@ -4,6 +4,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -62,6 +63,31 @@ public class FullJoinController {
         } catch (Exception e) {
             response.put("message", "Error retrieving records");
             response.put("error", e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Operation(summary = "Get alert messages by company", description = "Returns all messages with active alerts for meters belonging to a company, ordered by created_at DESC")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved alert records", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "No alert records found", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+    })
+    @GetMapping("/alerts/{companyUniqueKey}")
+    public ResponseEntity<Object> getAlertMessagesByCompany(@PathVariable String companyUniqueKey) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            List<Object> records = dataService.getAlertMessagesByCompany(companyUniqueKey);
+
+            if (records.isEmpty()) {
+                response.put("message", "No alert records found for company: " + companyUniqueKey);
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+
+            return new ResponseEntity<>(records, HttpStatus.OK);
+        } catch (DataAccessException e) {
+            response.put("message", "Error retrieving alert records from database");
+            response.put("error", e.getMessage() + ": " + e.getMostSpecificCause().getMessage());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
