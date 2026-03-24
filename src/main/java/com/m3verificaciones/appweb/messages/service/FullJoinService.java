@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.m3verificaciones.appweb.messages.exception.NoResultsFoundException;
 import com.m3verificaciones.appweb.messages.model.MessageDecodedBove;
 import com.m3verificaciones.appweb.messages.model.MessageDecodedYounio;
 import com.m3verificaciones.appweb.messages.repository.MessageDecodedBoveRepository;
@@ -49,12 +50,18 @@ public class FullJoinService {
                 .toList();
 
         if (devEuis.isEmpty()) {
-            return List.of();
+            throw new NoResultsFoundException(
+                    "No meters found for company: " + companyUniqueKey);
         }
 
         List<Object> result = new ArrayList<>();
         result.addAll(messageDecodedBoveRepository.findAlertsbyDevEuis(devEuis));
         result.addAll(messageDecodedYounioRepository.findAlertsbyDevEuis(devEuis));
+
+        if (result.isEmpty()) {
+            throw new NoResultsFoundException(
+                    "No alert messages found for the meters of company: " + companyUniqueKey);
+        }
 
         result.sort((a, b) -> {
             LocalDateTime timeA = a instanceof MessageDecodedBove bove
@@ -63,7 +70,7 @@ public class FullJoinService {
             LocalDateTime timeB = b instanceof MessageDecodedBove bove
                     ? bove.getCreatedAt()
                     : ((MessageDecodedYounio) b).getCreatedAt();
-            return timeB.compareTo(timeA); // DESC
+            return timeB.compareTo(timeA);
         });
 
         return result;

@@ -1,6 +1,8 @@
 package com.m3verificaciones.appweb.messages.exception;
 
 import jakarta.validation.ConstraintViolationException;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -77,5 +79,14 @@ public class GlobalExceptionHandler {
                                                 MESSAGE_KEY, ex.getMessage(),
                                                 DETAILS_KEY, ex.getCause() != null ? ex.getCause().getMessage()
                                                                 : "No additional details"));
+        }
+
+        @ExceptionHandler(NoResultsFoundException.class)
+        public ResponseEntity<Map<String, String>> handleNoResultsFound(NoResultsFoundException ex) {
+                return ResponseEntity
+                                .status(HttpStatus.NOT_FOUND)
+                                .body(Map.of(
+                                                ERROR_KEY, "No results found",
+                                                MESSAGE_KEY, ex.getMessage()));
         }
 }
